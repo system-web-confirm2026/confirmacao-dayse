@@ -18,6 +18,7 @@
         .btn { padding: 16px; border: none; border-radius: 15px; font-size: 15px; font-weight: 700; cursor: pointer; color: white; width: 80%; transition: 0.2s; }
         .btn-yes { background-color: #2d6a4f; }
         .btn-no { background-color: #ae2012; }
+        .btn-disabled { background-color: #ccc !important; cursor: not-allowed !important; }
         .footer { font-size: 11px; color: #636e72; margin-top: 25px; font-weight: bold; }
         .list { text-align: left; list-style: none; padding: 0; margin-top: 25px; }
         .list li { margin-bottom: 15px; font-size: 14.5px; border-left: 4px solid #2d6a4f; padding-left: 15px; color: #2d3436; }
@@ -31,17 +32,18 @@
 
         <form id="session-form" action="https://formspree.io/f/maqaenrq" method="POST">
             <div id="form-content">
-                <h2>Você deseja confirmar sua presença?</h2>
+                <h2 id="welcome-msg">Você deseja confirmar sua presença?</h2>
                 <div class="system-alert">
-                    <p>Atenção: Após confirmar ou cancelar, você não poderá mudar sua resposta. O link expira 2h antes da sessão.</p>
+                    <p id="alert-text">Atenção: Após confirmar ou cancelar, você não poderá mudar sua resposta. O link expira 2h antes da sessão.</p>
                 </div>
-                <p>Como gostaria de se identificar hoje?</p>
+                <p id="label-identificacao">Como gostaria de se identificar hoje?</p>
                 <input type="text" name="Identificação" id="user-name" required>
                 <input type="hidden" name="Resposta" id="ans">
                 <input type="hidden" name="_subject" id="sub-line">
+                
                 <div class="btn-box">
-                    <button type="submit" class="btn btn-yes" onclick="setAns('Confirmado')">Sim, confirmar consulta</button>
-                    <button type="submit" class="btn btn-no" onclick="setAns('Cancelado')">Não, cancelar consulta</button>
+                    <button type="submit" id="btn-confirm" class="btn btn-yes" onclick="setAns('Confirmado')">Sim, confirmar consulta</button>
+                    <button type="submit" id="btn-cancel" class="btn btn-no" onclick="setAns('Cancelado')">Não, cancelar consulta</button>
                 </div>
                 <div class="footer">© Dayse Borges | Psicóloga</div>
             </div>
@@ -67,8 +69,37 @@
     </div>
 
     <script>
-        // BLOQUEIO DE REENTRADA (localStorage)
         window.onload = function() {
+            // 1. LÓGICA DE URL DINÂMICA
+            const urlParams = new URLSearchParams(window.location.search);
+            const nomeURL = urlParams.get('p');
+            const horaURL = urlParams.get('h');
+
+            if (nomeURL) {
+                document.getElementById('welcome-msg').innerText = `Olá, ${nomeURL}!`;
+                document.getElementById('user-name').value = nomeURL;
+                document.getElementById('label-identificacao').innerText = "Confirme seu nome abaixo:";
+            }
+
+            if (horaURL) {
+                const agora = new Date();
+                const [horas, minutos] = horaURL.split(':');
+                const dataConsulta = new Date();
+                dataConsulta.setHours(parseInt(horas), parseInt(minutos), 0);
+
+                const diffHoras = (dataConsulta - agora) / (1000 * 60 * 60);
+
+                // Se faltar menos de 2h (e for para o dia de hoje)
+                if (diffHoras < 2 && diffHoras > -1) {
+                    const btnCancel = document.getElementById('btn-cancel');
+                    btnCancel.disabled = true;
+                    btnCancel.classList.add('btn-disabled');
+                    btnCancel.innerText = "Cancelamento indisponível (limite de 2h)";
+                    document.getElementById('alert-text').innerText = "Prazo de cancelamento via site encerrado. Fale com a psicóloga via WhatsApp.";
+                }
+            }
+
+            // 2. BLOQUEIO DE REENTRADA (Seu código original)
             const jaRespondeu = localStorage.getItem('statusConsulta');
             if (jaRespondeu) {
                 document.getElementById('form-content').classList.add('hidden');
@@ -91,13 +122,18 @@
         const form = document.getElementById('session-form');
         form.onsubmit = async (e) => {
             e.preventDefault();
+            // Verifica se o botão clicado não estava desativado (segurança extra)
+            const choice = document.getElementById('ans').value;
+            if (choice === 'Cancelado' && document.getElementById('btn-cancel').disabled) {
+                return;
+            }
+
             fetch(form.action, { 
                 method: 'POST', 
                 body: new FormData(form), 
                 headers: { 'Accept': 'application/json' } 
             });
             document.getElementById('form-content').classList.add('hidden');
-            const choice = document.getElementById('ans').value;
             if (choice === 'Confirmado') {
                 document.getElementById('msg-yes').classList.remove('hidden');
             } else {
