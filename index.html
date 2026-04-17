@@ -70,26 +70,23 @@
 
     <script>
         window.onload = function() {
-            // 1. LÓGICA DE URL DINÂMICA
             const urlParams = new URLSearchParams(window.location.search);
             const nomeURL = urlParams.get('p');
             const horaURL = urlParams.get('h');
 
+            // Preenche o nome silenciosamente se vier no link
             if (nomeURL) {
-                document.getElementById('welcome-msg').innerText = `Olá, ${nomeURL}!`;
                 document.getElementById('user-name').value = nomeURL;
-                document.getElementById('label-identificacao').innerText = "Confirme seu nome abaixo:";
             }
 
+            // Lógica da trava de 2 horas (Inalterada)
             if (horaURL) {
                 const agora = new Date();
                 const [horas, minutos] = horaURL.split(':');
                 const dataConsulta = new Date();
                 dataConsulta.setHours(parseInt(horas), parseInt(minutos), 0);
-
                 const diffHoras = (dataConsulta - agora) / (1000 * 60 * 60);
 
-                // Se faltar menos de 2h (e for para o dia de hoje)
                 if (diffHoras < 2 && diffHoras > -1) {
                     const btnCancel = document.getElementById('btn-cancel');
                     btnCancel.disabled = true;
@@ -99,7 +96,7 @@
                 }
             }
 
-            // 2. BLOQUEIO DE REENTRADA (Seu código original)
+            // Bloqueio de reentrada
             const jaRespondeu = localStorage.getItem('statusConsulta');
             if (jaRespondeu) {
                 document.getElementById('form-content').classList.add('hidden');
@@ -122,11 +119,8 @@
         const form = document.getElementById('session-form');
         form.onsubmit = async (e) => {
             e.preventDefault();
-            // Verifica se o botão clicado não estava desativado (segurança extra)
             const choice = document.getElementById('ans').value;
-            if (choice === 'Cancelado' && document.getElementById('btn-cancel').disabled) {
-                return;
-            }
+            if (choice === 'Cancelado' && document.getElementById('btn-cancel').disabled) return;
 
             fetch(form.action, { 
                 method: 'POST', 

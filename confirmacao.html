@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Link | Dayse Borges</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #2d6a4f; --input-bg: #f8fbf9; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 90%; max-width: 450px; text-align: center; }
+        .logo { color: var(--accent); font-size: 26px; font-weight: 600; margin-bottom: 5px; }
+        .work-hours { font-size: 12px; color: #888; margin-bottom: 30px; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 8px; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border: 1px solid #e2efe7; border-radius: 12px; background: var(--input-bg); font-size: 16px; box-sizing: border-box; outline: none; }
+        button { width: 100%; background: var(--accent); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        #result { margin-top: 25px; padding: 10px; background: #f9f9f9; border-radius: 8px; font-size: 11px; color: #888; word-break: break-all; display: none; border: 1px dashed #ddd; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">Dayse</div>
+        <div class="work-hours">Atendimento: 09:00 às 19:10</div>
+        <div class="input-group">
+            <label>Nome do Paciente</label>
+            <input type="text" id="p" placeholder="Digite o nome">
+        </div>
+        <div class="input-group">
+            <label>Data</label>
+            <input type="text" id="d" placeholder="Ex: 17/04/2026">
+        </div>
+        <div class="input-group">
+            <label>Horário</label>
+            <input type="time" id="h">
+        </div>
+        <button onclick="gerar()">GERAR E COPIAR LINK</button>
+        <div id="result"></div>
+    </div>
+    <script>
+        function gerar() {
+            const p = document.getElementById('p').value;
+            const d = document.getElementById('d').value;
+            const h = document.getElementById('h').value;
+            if(!p || !d || !h) return alert("Preencha tudo!");
+
+            const url = `https://confirmacao-dayse.netlify.app/confirmacao.html?p=${encodeURIComponent(p)}&d=${encodeURIComponent(d)}&h=${encodeURIComponent(h)}`;
+            
+            const resDiv = document.getElementById('result');
+            resDiv.innerText = url;
+            resDiv.style.display = 'block';
+            
+            navigator.clipboard.writeText(url);
+            alert("Link copiado para o WhatsApp!");
+        }
+    </script>
+</body>
+</html>
